@@ -1,0 +1,143 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(12, 11, 11, 0.18) transparent;
+  }
+
+  body {
+    background-color: #000000;
+    color: #cbd5e1;
+    font-family: "Plus Jakarta Sans", sans-serif;
+    background-image:
+      radial-gradient(circle at 15% 0%, rgba(34, 211, 238, 0.08) 0%, transparent 42%),
+      radial-gradient(circle at 85% 15%, rgba(56, 189, 248, 0.06) 0%, transparent 36%),
+      linear-gradient(180deg, #000000 0%, #03060d 50%, #000000 100%);
+    background-size: auto, auto, cover;
+    background-attachment: fixed;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Outfit", sans-serif;
+    letter-spacing: -0.01em;
+  }
+
+  #root {
+    min-height: 100vh;
+  }
+
+  /* Hide Spline Logo natively and aggressively */
+  spline-viewer::part(logo) {
+    display: none !important;
+  }
+  [class*="spline-watermark"] {
+    display: none !important;
+  }
+}
+
+@layer utilities {
+  .glass-card {
+    @apply bg-surface/80 backdrop-blur-2xl border border-primary/20 shadow-[0_25px_60px_-25px_rgba(0,0,0,0.95)] rounded-2xl;
+  }
+
+  .glass-panel {
+    @apply bg-surface/85 backdrop-blur-[26px] border border-primary/20 rounded-2xl shadow-[0_20px_55px_-30px_rgba(0,0,0,0.95)];
+  }
+
+  .luxury-border {
+    @apply border border-primary/20 shadow-[0_0_0_1px_rgba(34,211,238,0.05),0_20px_45px_-20px_rgba(34,211,238,0.08)];
+  }
+
+  .premium-gradient-text {
+    background: linear-gradient(120deg, #e2e8f0 10%, #bae6fd 45%, #22d3ee 75%, #0ea5e9 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .metric-chip {
+    @apply inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-[10px] uppercase tracking-[0.14em] text-on-surface-variant;
+  }
+
+  .glow-text {
+    text-shadow: 0 0 24px rgba(34, 211, 238, 0.34);
+  }
+
+  .risk-glow-text {
+    text-shadow: 0 0 25px rgba(248, 113, 113, 0.25);
+  }
+
+  .luxury-grid {
+    background-image:
+      linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  .premium-black {
+    background-color: rgba(0, 0, 0, 0.96);
+  }
+
+  .subtle-legend {
+    @apply font-mono text-[10px] uppercase tracking-[0.18em] text-on-surface-variant;
+  }
+}
+
+@keyframes float {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-6px) rotate(0.2deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+.animate-float {
+  animation: float 10s ease-in-out infinite;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(34, 211, 238, 0.22);
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(34, 211, 238, 0.35);
+}
+
+@media (max-width: 1024px) {
+  .animate-float {
+    animation: none;
+  }
+
+  .luxury-grid {
+    background-size: 18px 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
