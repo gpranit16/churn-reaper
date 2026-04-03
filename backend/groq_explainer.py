@@ -102,6 +102,63 @@ def _build_executive_summary_fallback(analytics_data: dict[str, Any]) -> str:
     )
 
 
+def _risk_writing_instruction(churn_probability: float, risk_level: str) -> str:
+    if risk_level == "LOW" or float(churn_probability) < 40:
+        return (
+            "This is a LOW-risk case. Use calm wording such as 'currently low risk' or 'unlikely to churn right now'. "
+            "Do NOT say 'likely to churn', 'high risk', or 'very high risk'."
+        )
+    if risk_level == "MEDIUM":
+        return (
+            "This is a MEDIUM-risk case. Say the customer may churn without intervention, but avoid high-risk language."
+        )
+    return "This is a HIGH-risk case. It is okay to clearly mention high likelihood of churn."
+
+
+def _is_low_risk_contradiction(text: str) -> bool:
+    lowered = (text or "").lower()
+    contradiction_markers = [
+        "likely to churn",
+        "high risk",
+        "very high risk",
+        "at high risk",
+        "imminent churn",
+    ]
+    return any(marker in lowered for marker in contradiction_markers)
+
+
+def _build_risk_safe_explanation(
+    customer_data: dict[str, Any],
+    churn_probability: float,
+    risk_level: str,
+) -> str:
+    tenure = customer_data.get("tenure", "NA")
+    contract = customer_data.get("Contract", "NA")
+    monthly = customer_data.get("MonthlyCharges", "NA")
+
+    if risk_level == "LOW" or float(churn_probability) < 40:
+        return (
+            f"This customer is currently in the LOW churn-risk segment with an estimated churn probability of "
+            f"{round(float(churn_probability), 2)}%. Their profile (tenure {tenure} months, {contract} contract, "
+            f"monthly charges around ₹{monthly}) suggests they are relatively stable right now. Continue normal "
+            "engagement and monitor contract, pricing, and support signals over time."
+        )
+
+    if risk_level == "MEDIUM":
+        return (
+            f"This customer is in the MEDIUM churn-risk segment with an estimated churn probability of "
+            f"{round(float(churn_probability), 2)}%. Their current profile indicates moderate risk that could "
+            "increase without targeted retention actions. A focused offer and service engagement should help "
+            "reduce the chance of churn."
+        )
+
+    return (
+        f"This customer is in the HIGH churn-risk segment with an estimated churn probability of "
+        f"{round(float(churn_probability), 2)}%. Their profile indicates meaningful churn pressure and requires "
+        "immediate retention action. Prioritize contract/value offers and proactive service support to reduce risk."
+    )
+
+
 def explain_churn_reason(
     customer_data: dict[str, Any],
     shap_values: dict[str, float],
@@ -109,6 +166,7 @@ def explain_churn_reason(
     risk_level: str,
 ) -> str:
     top_factors = _top_shap_factors(shap_values)
+    risk_instruction = _risk_writing_instruction(churn_probability, risk_level)
 
     prompt = f"""
 You are a customer retention analyst at a
@@ -128,10 +186,13 @@ AI Model Analysis:
 - Risk Level: {risk_level}
 - Top factors from SHAP: {top_factors}
 
+Risk communication rule:
+- {risk_instruction}
+
 Important: Any monetary reference must use Indian Rupees (INR, ₹).
 
 Write a 3-4 sentence plain English explanation
-of WHY this customer is likely to churn.
+of this customer's churn risk and key drivers.
 Be specific. Mention actual values.
 Do not use technical jargon.
 Sound like a human analyst not a robot.
@@ -139,7 +200,11 @@ Sound like a human analyst not a robot.
 Return only the explanation text.
 """.strip()
 
-    return _chat(prompt, temperature=0.4, max_tokens=260)
+    explanation = _chat(prompt, temperature=0.35, max_tokens=260)
+    if (risk_level == "LOW" or float(churn_probability) < 40) and _is_low_risk_contradiction(explanation):
+        return _build_risk_safe_explanation(customer_data, churn_probability, risk_level)
+
+    return explanation
 
 
 def generate_retention_strategy(
