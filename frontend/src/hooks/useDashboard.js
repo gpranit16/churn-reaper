@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { churnApi, getApiBaseUrl } from '../services/api';
+import { churnApi } from '../services/api';
 
 const FALLBACK_DASHBOARD_DATA = {
   analytics: {
@@ -29,13 +29,23 @@ export function useDashboard() {
     let isActive = true;
 
     const fetchDashboard = async () => {
+      let timeoutId;
       try {
         if (!isActive) return;
 
         setIsLoading(true);
         setError(null);
 
-        const summary = await churnApi.getDashboardSummary();
+        const timeoutPromise = new Promise((_, reject) => {
+          timeoutId = window.setTimeout(() => {
+            reject(new Error('Dashboard request timed out. Please make sure backend is running on port 8000.'));
+          }, 14000);
+        });
+
+        const summary = await Promise.race([
+          churnApi.getDashboardSummary(),
+          timeoutPromise,
+        ]);
 
         if (!isActive) return;
 
@@ -46,24 +56,11 @@ export function useDashboard() {
         });
       } catch (err) {
         if (!isActive) return;
-        const message = String(err?.message || '').toLowerCase();
-        const hasNetworkIssue =
-          !err?.response &&
-          (err?.code === 'ERR_NETWORK' ||
-            err?.code === 'ECONNABORTED' ||
-            message.includes('network error') ||
-            message.includes('timeout'));
-
-        if (hasNetworkIssue) {
-          const baseUrl = getApiBaseUrl();
-          const backendHint = baseUrl.startsWith('/') ? 'http://127.0.0.1:8000' : baseUrl;
-          setError(
-            `Unable to load dashboard data from ${backendHint}. If backend was idle, wait up to 60 seconds and refresh.`
-          );
-        } else {
-          setError(err?.message || 'Failed to fetch dashboard data');
-        }
+        setError(err?.message || 'Failed to fetch dashboard data');
       } finally {
+        if (timeoutId) {
+          window.clearTimeout(timeoutId);
+        }
         if (isActive) {
           setIsLoading(false);
         }
