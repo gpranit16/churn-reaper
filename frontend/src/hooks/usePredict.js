@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { churnApi } from '../services/api';
+import { churnApi, getApiBaseUrl } from '../services/api';
 
 export function usePredict() {
   const [result, setResult] = useState(null);
@@ -24,7 +24,13 @@ export function usePredict() {
           message.includes('timeout'));
 
       if (hasNetworkIssue) {
-        setError('Cannot reach backend API. Ensure the backend server is running on http://127.0.0.1:8000 and retry.');
+        const baseUrl = getApiBaseUrl();
+        const backendHint = baseUrl.startsWith('/')
+          ? 'http://127.0.0.1:8000'
+          : baseUrl;
+        setError(
+          `Cannot reach backend API at ${backendHint}. If backend was idle, wait up to 60 seconds for wake-up and retry.`
+        );
       } else if (Array.isArray(detail)) {
         const missingFields = detail
           .filter((item) => item?.type === 'missing' && Array.isArray(item?.loc))
