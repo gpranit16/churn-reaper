@@ -29,7 +29,7 @@ export function usePredict() {
           ? 'http://127.0.0.1:8000'
           : baseUrl;
         setError(
-          `Cannot reach backend API at ${backendHint}. If backend was idle, wait up to 60 seconds for wake-up and retry.`
+          `Cannot reach backend API at ${backendHint}. If backend was idle, wait about 60–90 seconds for wake-up and retry.`
         );
       } else if (Array.isArray(detail)) {
         const missingFields = detail

@@ -19,7 +19,16 @@ const API_TIMEOUT_MS =
       ? 70000
       : 12000;
 
-const WARMUP_DELAY_MS = 4000;
+const HEALTH_CHECK_TIMEOUT_MS = 8000;
+const configuredWakeMax = Number(import.meta.env.VITE_BACKEND_WAKE_MAX_MS);
+const BACKEND_WAKE_MAX_MS =
+  Number.isFinite(configuredWakeMax) && configuredWakeMax > 0
+    ? configuredWakeMax
+    : import.meta.env.PROD
+      ? 55000
+      : 0;
+const BACKEND_WAKE_POLL_MS = 2500;
+const RETRY_DELAY_MS = 2500;
 
 export function getApiBaseUrl() {
   return API_BASE_URL;
@@ -61,14 +70,43 @@ function isRetryableNetworkError(error) {
 }
 
 async function warmupBackend(client) {
+  await client.request({
+    method: 'get',
+    url: '/health',
+    timeout: HEALTH_CHECK_TIMEOUT_MS,
+  });
+}
+
+async function waitForBackend(client) {
+  if (!import.meta.env.PROD || BACKEND_WAKE_MAX_MS <= 0) {
+    return;
+  }
+
+  const start = Date.now();
+  while (Date.now() - start < BACKEND_WAKE_MAX_MS) {
+    try {
+      await warmupBackend(client);
+      return;
+    } catch {
+      await sleep(BACKEND_WAKE_POLL_MS);
+    }
+  }
+
+  // Best effort: allow request attempt even if warmup polling did not succeed.
+}
+
+async function requestWithRetry(client, config) {
   try {
-    await client.request({
-      method: 'get',
-      url: '/health',
-      timeout: 20000,
-    });
-  } catch {
-    // ignore warmup errors; primary request retry handles final failure
+    const { data } = await client.request(config);
+    return data;
+  } catch (error) {
+    if (!isRetryableNetworkError(error)) {
+      throw error;
+    }
+
+    await sleep(RETRY_DELAY_MS);
+    const { data } = await client.request(config);
+    return data;
   }
 }
 
@@ -78,25 +116,11 @@ async function requestWithFallback(config) {
 
   for (const client of clients) {
     try {
-      const { data } = await client.request(config);
+      await waitForBackend(client);
+      const data = await requestWithRetry(client, config);
       return data;
     } catch (error) {
       lastError = error;
-
-      const shouldWarmupRetry = import.meta.env.PROD && isRetryableNetworkError(error);
-      if (!shouldWarmupRetry) {
-        continue;
-      }
-
-      await warmupBackend(client);
-      await sleep(WARMUP_DELAY_MS);
-
-      try {
-        const { data } = await client.request(config);
-        return data;
-      } catch (retryError) {
-        lastError = retryError;
-      }
     }
   }
 
