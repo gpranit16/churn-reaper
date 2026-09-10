@@ -15,9 +15,7 @@ const configuredTimeout = Number(import.meta.env.VITE_API_TIMEOUT_MS);
 const API_TIMEOUT_MS =
   Number.isFinite(configuredTimeout) && configuredTimeout > 0
     ? configuredTimeout
-    : import.meta.env.PROD
-      ? 70000
-      : 12000;
+    : 120000;
 
 const WARMUP_DELAY_MS = 4000;
 
@@ -128,5 +126,20 @@ export const churnApi = {
       method: 'get',
       url: '/sample-customer',
     });
-  }
+  },
+  analyzeDataset: async (payload) => {
+    return requestWithFallback({
+      method: 'post',
+      url: '/dataset-analysis',
+      data: payload,
+      timeout: 180000,
+    });
+  },
+  getRetentionStrategy: async (payload) => {
+    return requestWithFallback({
+      method: 'post',
+      url: '/customer-retention-strategy',
+      data: payload,
+    });
+  },
 };

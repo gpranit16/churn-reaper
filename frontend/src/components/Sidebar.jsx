@@ -8,6 +8,7 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
     { path: '/', label: 'Landing', icon: Home },
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/predict', label: 'Predict Churn', icon: Users },
+    { path: '/dataset-analysis', label: 'Dataset Analysis', icon: Sparkles },
     { path: '/roi', label: 'ROI Simulator', icon: Calculator },
   ];
 

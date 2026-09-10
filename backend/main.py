@@ -4,13 +4,13 @@ import os
 from typing import Any
 
 import uvicorn
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from explainer import get_global_importance
 from groq_explainer import generate_executive_summary
-from predict import predict_churn
+from predict import predict_churn, predict_dataset
 
 app = FastAPI(title="Churn Predictor API", version="1.0.0")
 
@@ -62,6 +62,49 @@ def predict(customer: CustomerData) -> dict[str, Any]:
         return predict_churn(customer.model_dump())
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Prediction failed: {exc}") from exc
+
+
+class DatasetAnalysisRequest(BaseModel):
+    csv_content: str
+    target_column: str
+    customer_id_column: str | None = None
+    positive_class: str = "Yes"
+
+
+@app.post("/dataset-analysis")
+def dataset_analysis(request: DatasetAnalysisRequest) -> dict[str, Any]:
+    try:
+        result = predict_dataset(
+            csv_content=request.csv_content,
+            target_column=request.target_column,
+            customer_id_column=request.customer_id_column,
+            positive_class=request.positive_class,
+        )
+        return result
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Dataset analysis failed: {exc}") from exc
+
+
+class RetentionStrategyRequest(BaseModel):
+    customer_data: dict[str, Any]
+    churn_probability: float
+    shap_values: dict[str, float] | None = None
+
+
+@app.post("/customer-retention-strategy")
+def customer_retention_strategy(request: RetentionStrategyRequest) -> dict[str, Any]:
+    try:
+        from recommendations import evaluate_retention_strategy
+
+        return evaluate_retention_strategy(
+            customer_data=request.customer_data,
+            churn_probability=request.churn_probability,
+            shap_values=request.shap_values,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Retention evaluation failed: {exc}") from exc
 
 
 @app.get("/feature-importance")

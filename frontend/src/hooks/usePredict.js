@@ -60,5 +60,5 @@ export function usePredict() {
     }
   };
 
-  return { predict, getSample, result, isLoading, error };
+  return { predict, getSample, result, setResult, isLoading, error };
 }

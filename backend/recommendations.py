@@ -483,3 +483,135 @@ def calculate_dynamic_roi(
         "default_duration_months": float(default_duration_months),
         "offer_breakdown": offer_breakdown,
     }
+
+
+def evaluate_retention_strategy(
+    customer_data: dict[str, Any],
+    churn_probability: float,
+    shap_values: dict[str, float] | None = None,
+) -> dict[str, Any]:
+    """
+    Evaluate AI retention offers with strict backend financial economics.
+    Calculates cost, profit at risk, scenario value protected, net benefit, and ROI.
+    """
+    from nvidia_retention import generate_nvidia_retention_offers
+    from retention_config import RETENTION_CONFIG
+
+    monthly_charges = max(_safe_float(customer_data.get("MonthlyCharges", 0.0)), 0.0)
+    tenure = max(_safe_float(customer_data.get("tenure", 0.0)), 0.0)
+    churn_prob_pct = _clamp(_safe_float(churn_probability), 0.0, 100.0)
+    churn_prob_fraction = churn_prob_pct / 100.0
+
+    # Sorted top SHAP factors
+    top_drivers = []
+    if isinstance(shap_values, dict):
+        sorted_shap = sorted(shap_values.items(), key=lambda item: abs(item[1]), reverse=True)
+        top_drivers = [feat for feat, _ in sorted_shap[:5]]
+    elif isinstance(shap_values, list):
+        for item in shap_values[:5]:
+            if isinstance(item, dict):
+                top_drivers.append(item.get("feature") or item.get("name") or str(item))
+            else:
+                top_drivers.append(str(item))
+
+    customer_context = {
+        "churn_probability": round(churn_prob_pct, 2),
+        "risk_level": _risk_level(churn_prob_pct),
+        "top_shap_drivers": top_drivers,
+        "monthly_charges": monthly_charges,
+        "tenure": tenure,
+        "contract": customer_data.get("Contract", "Month-to-month"),
+        "internet_service": customer_data.get("InternetService", "Fiber optic"),
+        "tech_support": customer_data.get("TechSupport", "No"),
+        "online_security": customer_data.get("OnlineSecurity", "No"),
+        "payment_method": customer_data.get("PaymentMethod", "Electronic check"),
+        "paperless_billing": customer_data.get("PaperlessBilling", "Yes"),
+    }
+
+    # 1. Generate 3 validated offers (NVIDIA AI or fallback)
+    raw_offers, provider = generate_nvidia_retention_offers(customer_context)
+
+    # 2. Customer Economics
+    planning_horizon = RETENTION_CONFIG.planning_horizon_months  # 24
+    gross_margin = RETENTION_CONFIG.gross_margin  # 0.60
+
+    remaining_months = max(planning_horizon - tenure, 0.0)
+    future_revenue = monthly_charges * remaining_months
+    expected_revenue_at_risk = future_revenue * churn_prob_fraction
+    expected_profit_at_risk = expected_revenue_at_risk * gross_margin
+
+    # 3. Evaluate each offer
+    evaluated_offers: list[dict[str, Any]] = []
+
+    for offer in raw_offers:
+        o_type = offer.get("type", "discount")
+        title = offer.get("title", "")
+        reason = offer.get("reason", "")
+
+        if o_type == "discount":
+            discount_pct = float(offer.get("discount_percent", 10.0))
+            dur_months = int(offer.get("duration_months", 3))
+            retention_cost = monthly_charges * (discount_pct / 100.0) * dur_months
+            scenario_success = RETENTION_CONFIG.discount.scenario_success_rate  # 0.20
+            cost_details = f"{int(discount_pct)}% off for {dur_months} mo"
+
+        elif o_type == "support":
+            m_cost = float(offer.get("monthly_cost", 25.0))
+            dur_months = int(offer.get("duration_months", 3))
+            retention_cost = m_cost * dur_months
+            scenario_success = RETENTION_CONFIG.support.scenario_success_rate  # 0.15
+            cost_details = f"₹{int(m_cost)}/mo for {dur_months} mo"
+
+        else:  # contract_upgrade
+            o_type = "contract_upgrade"
+            one_time_cost = float(offer.get("one_time_cost", 100.0))
+            retention_cost = one_time_cost
+            scenario_success = RETENTION_CONFIG.contract.scenario_success_rate  # 0.25
+            cost_details = f"₹{int(one_time_cost)} one-time incentive"
+
+        expected_value_protected = expected_profit_at_risk * scenario_success
+        net_benefit = expected_value_protected - retention_cost
+        roi = (net_benefit / retention_cost) if retention_cost > 0 else 0.0
+
+        evaluated_offers.append({
+            "type": o_type,
+            "title": title,
+            "reason": reason,
+            "cost_details": cost_details,
+            "retention_cost": round(retention_cost, 2),
+            "scenario_success_rate": round(scenario_success * 100, 1),
+            "scenario_success_label": f"{int(scenario_success * 100)}% (Scenario Estimate)",
+            "expected_value_protected": round(expected_value_protected, 2),
+            "net_benefit": round(net_benefit, 2),
+            "roi": round(roi, 2),
+            "is_viable": net_benefit > 0,
+        })
+
+    # 4. Rank and select best offer: positive net benefit first, then highest net benefit, then ROI
+    sorted_offers = sorted(
+        evaluated_offers,
+        key=lambda x: (1 if x["net_benefit"] > 0 else 0, x["net_benefit"], x["roi"]),
+        reverse=True,
+    )
+
+    best_offer = sorted_offers[0] if sorted_offers else None
+    is_retained = best_offer is not None and best_offer["net_benefit"] > 0
+    decision_text = "RETAIN CUSTOMER" if is_retained else "DO NOT SPEND"
+    decision_code = "RETAIN" if is_retained else "DO_NOT_SPEND"
+
+    return {
+        "provider": provider,
+        "decision": decision_text,
+        "decision_code": decision_code,
+        "customer_economics": {
+            "planning_horizon_months": planning_horizon,
+            "gross_margin_percent": int(gross_margin * 100),
+            "remaining_months": round(remaining_months, 1),
+            "future_revenue": round(future_revenue, 2),
+            "expected_revenue_at_risk": round(expected_revenue_at_risk, 2),
+            "expected_profit_at_risk": round(expected_profit_at_risk, 2),
+        },
+        "best_offer": best_offer,
+        "offers": evaluated_offers,
+        "disclaimer": "Financial impact is a scenario estimate based on configured business assumptions.",
+    }
