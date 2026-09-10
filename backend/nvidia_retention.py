@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import Any
 
 from dotenv import load_dotenv
-from openai import OpenAI
 from retention_config import RETENTION_CONFIG
 
 BACKEND_DIR = Path(__file__).resolve().parent
@@ -171,6 +170,8 @@ def generate_nvidia_retention_offers(customer_context: dict[str, Any]) -> tuple[
     user_prompt = f"Customer Profile:\n{json.dumps(customer_context, indent=2)}\nGenerate the 3 allowed retention offers in JSON."
 
     try:
+        from openai import OpenAI
+
         client = OpenAI(
             base_url=NVIDIA_BASE_URL,
             api_key=api_key,
