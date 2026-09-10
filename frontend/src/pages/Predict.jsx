@@ -46,9 +46,9 @@ const BASE_CUSTOMER_PROFILE = {
 };
 
 const FORM_LABEL_CLASS =
-  'font-mono text-[11px] text-on-surface-variant uppercase tracking-[0.16em]';
+  'block font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-on-surface-variant mb-1.5';
 const FORM_CONTROL_CLASS =
-  'w-full rounded-xl border border-primary/20 bg-surface-low/80 px-3 py-3 text-sm text-on-surface focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all';
+  'w-full rounded-lg border border-white/[0.1] bg-surface-low px-3 py-2 text-sm text-on-surface focus:border-brand-light focus:outline-none focus:ring-1 focus:ring-brand-light/30 transition-colors';
 
 export default function Predict() {
   const navigate = useNavigate();
@@ -95,7 +95,6 @@ export default function Predict() {
       return;
     }
 
-    // If retention_strategy was not precomputed (e.g. from dataset view), fetch on-demand
     let isMounted = true;
     const fetchRetention = async () => {
       setLoadingRetention(true);
@@ -191,409 +190,401 @@ export default function Predict() {
   }, [result]);
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 pb-12">
+    <div className="space-y-6 pb-12">
       {/* Header */}
-      <header className="glass-panel p-6 md:p-8 lg:p-9 relative overflow-hidden">
-        <div className="absolute -right-24 -top-24 h-52 w-52 rounded-full bg-primary/15 blur-[90px]" />
-        <div className="relative z-10 flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <div className="metric-chip mb-3">
-              {isDatasetMode ? 'Dataset Customer Details' : 'Single Customer Analysis'}
-            </div>
-            <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight premium-gradient-text">
-              {isDatasetMode ? `Customer ${datasetCustomerId}` : 'Churn Risk Prediction'}
-            </h2>
-            <p className="font-sans text-sm md:text-base text-on-surface mt-2 max-w-3xl leading-relaxed">
-              {isDatasetMode
-                ? `Inspecting exact dataset row and batch prediction outputs for customer ${datasetCustomerId}.`
-                : 'Analyze churn risk with explainable signals, NVIDIA AI-powered retention recommendations, and business economics.'}
-            </p>
+      <header className="rounded-xl border border-white/[0.08] bg-surface p-5 sm:p-6 shadow-panel flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="font-mono text-[11px] font-semibold uppercase tracking-wider text-brand-light">
+              {isDatasetMode ? 'Batch Dataset Inspection' : 'Single Customer Risk Profiler'}
+            </span>
+            <span className="text-white/[0.2] text-xs">/</span>
+            <span className="text-xs text-on-surface-muted">
+              {isDatasetMode ? `Row ID: ${datasetCustomerId}` : 'Live Inference'}
+            </span>
           </div>
-
-          {isDatasetMode && (
-            <div className="flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                onClick={handleBackToDataset}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-primary/40 bg-primary/20 text-primary font-mono text-xs uppercase tracking-[0.14em] hover:bg-primary hover:text-slate-950 transition-all duration-300 shadow-[0_0_15px_rgba(34,211,238,0.25)]"
-              >
-                <ArrowLeft size={15} />
-                Back to Dataset Results
-              </button>
-              <button
-                type="button"
-                onClick={handleSwitchToManual}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/15 bg-surface-high/30 text-xs font-mono uppercase tracking-[0.14em] text-on-surface-variant hover:text-on-surface hover:bg-white/5 transition-colors"
-              >
-                <RefreshCw size={14} />
-                Switch to Manual
-              </button>
-            </div>
-          )}
+          <h1 className="font-sans text-xl sm:text-2xl font-bold text-white tracking-tight">
+            {isDatasetMode ? `Customer Analysis (${datasetCustomerId})` : 'Customer Churn & Retention Intelligence'}
+          </h1>
+          <p className="text-xs sm:text-sm text-on-surface-variant mt-1 max-w-3xl">
+            {isDatasetMode
+              ? `Inspecting batch prediction and explainability scores from dataset row ${datasetCustomerId}.`
+              : 'Calculate churn risk with XGBoost, explain drivers with SHAP, and evaluate retention economics with NVIDIA Nemotron.'}
+          </p>
         </div>
+
+        {isDatasetMode && (
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleBackToDataset}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-brand/40 bg-brand/15 text-brand-light text-xs font-semibold hover:bg-brand hover:text-white transition-colors"
+            >
+              <ArrowLeft size={14} />
+              Dataset Table
+            </button>
+            <button
+              type="button"
+              onClick={handleSwitchToManual}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/[0.1] bg-surface-low text-xs text-on-surface-variant hover:text-white hover:bg-surface-high transition-colors"
+            >
+              <RefreshCw size={13} />
+              Manual Mode
+            </button>
+          </div>
+        )}
       </header>
 
-      {/* Dataset Mode Alert Banner */}
+      {/* Dataset Mode Alert */}
       {isDatasetMode && (
-        <div className="glass-panel border-l-4 border-primary p-4 rounded-r-xl flex items-center justify-between gap-4 luxury-border animate-in fade-in duration-300">
-          <div className="flex items-center gap-3">
-            <UserCheck className="text-primary shrink-0" size={20} />
-            <div>
-              <p className="font-mono text-xs uppercase tracking-wider text-primary font-bold">
-                Dataset Mode — Source of Truth
-              </p>
-              <p className="font-sans text-xs text-on-surface-variant mt-0.5">
-                Displaying batch prediction and explanation generated by the isolated Dataset Analysis model.
-              </p>
-            </div>
+        <div className="rounded-lg border border-brand/30 bg-brand/10 p-3.5 flex items-center justify-between gap-3 text-xs text-brand-light">
+          <div className="flex items-center gap-2.5">
+            <UserCheck size={16} className="text-brand-light shrink-0" />
+            <span>
+              <strong>Dataset Mode Active:</strong> Customer profile fields are read-only to preserve dataset integrity.
+            </span>
           </div>
           <button
             type="button"
             onClick={handleBackToDataset}
-            className="text-xs font-mono uppercase tracking-wider text-primary hover:underline shrink-0 hidden sm:inline"
+            className="font-mono underline hover:text-white shrink-0 hidden sm:inline"
           >
-            ← Back to Results Table
+            Return to Ledger
           </button>
         </div>
       )}
 
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 xl:gap-8 items-start">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
         {/* Left Column: Form Inputs */}
-        <section className="xl:col-span-5 xl:min-h-[calc(100vh-12rem)]">
-          <GlassCard
-            glow
-            floating={false}
-            paddingClass="p-6 md:p-7"
-            className="h-full xl:sticky xl:top-24 xl:min-h-[calc(100vh-12rem)]"
-          >
-            <div className="relative z-10 h-full flex flex-col">
-              <div className="flex flex-wrap justify-between items-center gap-3">
-                <h3 className="font-sans text-2xl font-semibold text-on-surface">
-                  {isDatasetMode ? 'Customer Features' : 'Customer Inputs'}
+        <section className="xl:col-span-5">
+          <GlassCard paddingClass="p-5 sm:p-6" className="space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
+              <div>
+                <h3 className="font-sans text-base font-semibold text-white tracking-tight">
+                  {isDatasetMode ? 'Customer Parameters' : 'Customer Profile Inputs'}
                 </h3>
-                {!isDatasetMode && (
-                  <button
-                    type="button"
-                    onClick={handleSample}
-                    className="text-xs font-mono uppercase tracking-[0.2em] text-primary hover:text-cyan-300 transition-colors"
-                    title="Load Demo Customer"
-                  >
-                    Auto-fill Sample
-                  </button>
-                )}
-                {isDatasetMode && (
-                  <span className="font-mono text-[11px] text-primary uppercase tracking-[0.16em] px-2.5 py-1 rounded bg-primary/10 border border-primary/20">
-                    CSV Row Data
-                  </span>
-                )}
+                <p className="text-xs text-on-surface-muted mt-0.5">
+                  Input features for the XGBoost model
+                </p>
+              </div>
+              {!isDatasetMode && (
+                <button
+                  type="button"
+                  onClick={handleSample}
+                  className="font-mono text-xs text-brand-light hover:underline uppercase tracking-wider"
+                  title="Load sample customer profile"
+                >
+                  Auto-fill Sample
+                </button>
+              )}
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div>
+                  <label className={FORM_LABEL_CLASS}>Tenure (Months)</label>
+                  <input
+                    type="number"
+                    name="tenure"
+                    value={formData.tenure ?? ''}
+                    onChange={handleChange}
+                    disabled={isDatasetMode}
+                    className={`${FORM_CONTROL_CLASS} ${isDatasetMode ? 'opacity-75 cursor-not-allowed bg-surface-low/50' : ''}`}
+                  />
+                </div>
+
+                <div>
+                  <label className={FORM_LABEL_CLASS}>Monthly Charges (₹)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    name="MonthlyCharges"
+                    value={formData.MonthlyCharges ?? ''}
+                    onChange={handleChange}
+                    disabled={isDatasetMode}
+                    className={`${FORM_CONTROL_CLASS} ${isDatasetMode ? 'opacity-75 cursor-not-allowed bg-surface-low/50' : ''}`}
+                  />
+                </div>
+
+                <div>
+                  <label className={FORM_LABEL_CLASS}>Contract Type</label>
+                  {isDatasetMode ? (
+                    <input
+                      type="text"
+                      value={formData.Contract || ''}
+                      disabled
+                      className={`${FORM_CONTROL_CLASS} opacity-75 cursor-not-allowed bg-surface-low/50`}
+                    />
+                  ) : (
+                    <select
+                      name="Contract"
+                      value={formData.Contract}
+                      onChange={handleChange}
+                      className={FORM_CONTROL_CLASS}
+                    >
+                      <option value="Month-to-month">Month-to-month</option>
+                      <option value="One year">One year</option>
+                      <option value="Two year">Two year</option>
+                    </select>
+                  )}
+                </div>
+
+                <div>
+                  <label className={FORM_LABEL_CLASS}>Internet Service</label>
+                  {isDatasetMode ? (
+                    <input
+                      type="text"
+                      value={formData.InternetService || ''}
+                      disabled
+                      className={`${FORM_CONTROL_CLASS} opacity-75 cursor-not-allowed bg-surface-low/50`}
+                    />
+                  ) : (
+                    <select
+                      name="InternetService"
+                      value={formData.InternetService}
+                      onChange={handleChange}
+                      className={FORM_CONTROL_CLASS}
+                    >
+                      <option value="Fiber optic">Fiber optic</option>
+                      <option value="DSL">DSL</option>
+                      <option value="No">No</option>
+                    </select>
+                  )}
+                </div>
+
+                <div>
+                  <label className={FORM_LABEL_CLASS}>Tech Support</label>
+                  {isDatasetMode ? (
+                    <input
+                      type="text"
+                      value={formData.TechSupport || ''}
+                      disabled
+                      className={`${FORM_CONTROL_CLASS} opacity-75 cursor-not-allowed bg-surface-low/50`}
+                    />
+                  ) : (
+                    <select
+                      name="TechSupport"
+                      value={formData.TechSupport}
+                      onChange={handleChange}
+                      className={FORM_CONTROL_CLASS}
+                    >
+                      <option value="No">No</option>
+                      <option value="Yes">Yes</option>
+                    </select>
+                  )}
+                </div>
+
+                <div>
+                  <label className={FORM_LABEL_CLASS}>Online Security</label>
+                  {isDatasetMode ? (
+                    <input
+                      type="text"
+                      value={formData.OnlineSecurity || ''}
+                      disabled
+                      className={`${FORM_CONTROL_CLASS} opacity-75 cursor-not-allowed bg-surface-low/50`}
+                    />
+                  ) : (
+                    <select
+                      name="OnlineSecurity"
+                      value={formData.OnlineSecurity}
+                      onChange={handleChange}
+                      className={FORM_CONTROL_CLASS}
+                    >
+                      <option value="No">No</option>
+                      <option value="Yes">Yes</option>
+                    </select>
+                  )}
+                </div>
+
+                <div>
+                  <label className={FORM_LABEL_CLASS}>Payment Method</label>
+                  {isDatasetMode ? (
+                    <input
+                      type="text"
+                      value={formData.PaymentMethod || ''}
+                      disabled
+                      className={`${FORM_CONTROL_CLASS} opacity-75 cursor-not-allowed bg-surface-low/50`}
+                    />
+                  ) : (
+                    <select
+                      name="PaymentMethod"
+                      value={formData.PaymentMethod}
+                      onChange={handleChange}
+                      className={FORM_CONTROL_CLASS}
+                    >
+                      <option value="Electronic check">Electronic check</option>
+                      <option value="Mailed check">Mailed check</option>
+                      <option value="Bank transfer (automatic)">Bank transfer (automatic)</option>
+                      <option value="Credit card (automatic)">Credit card (automatic)</option>
+                    </select>
+                  )}
+                </div>
+
+                <div>
+                  <label className={FORM_LABEL_CLASS}>Paperless Billing</label>
+                  {isDatasetMode ? (
+                    <input
+                      type="text"
+                      value={formData.PaperlessBilling || ''}
+                      disabled
+                      className={`${FORM_CONTROL_CLASS} opacity-75 cursor-not-allowed bg-surface-low/50`}
+                    />
+                  ) : (
+                    <select
+                      name="PaperlessBilling"
+                      value={formData.PaperlessBilling}
+                      onChange={handleChange}
+                      className={FORM_CONTROL_CLASS}
+                    >
+                      <option value="Yes">Yes</option>
+                      <option value="No">No</option>
+                    </select>
+                  )}
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className={FORM_LABEL_CLASS}>Senior Citizen</label>
+                  {isDatasetMode ? (
+                    <input
+                      type="text"
+                      value={Number(formData.SeniorCitizen) === 1 ? 'Yes (1)' : 'No (0)'}
+                      disabled
+                      className={`${FORM_CONTROL_CLASS} opacity-75 cursor-not-allowed bg-surface-low/50`}
+                    />
+                  ) : (
+                    <select
+                      name="SeniorCitizen"
+                      value={formData.SeniorCitizen}
+                      onChange={handleChange}
+                      className={FORM_CONTROL_CLASS}
+                    >
+                      <option value={0}>No</option>
+                      <option value={1}>Yes</option>
+                    </select>
+                  )}
+                </div>
               </div>
 
-              <form onSubmit={handleSubmit} className="mt-6 flex-1 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
-                  <div className="space-y-2">
-                    <label className={FORM_LABEL_CLASS}>Tenure (Months)</label>
-                    <input
-                      type="number"
-                      name="tenure"
-                      value={formData.tenure ?? ''}
-                      onChange={handleChange}
-                      disabled={isDatasetMode}
-                      className={`${FORM_CONTROL_CLASS} ${isDatasetMode ? 'opacity-85 cursor-not-allowed bg-surface-low/40' : ''}`}
-                    />
-                  </div>
+              <div className="p-3.5 rounded-lg bg-surface-low border border-white/[0.06] flex items-center justify-between">
+                <span className="font-mono text-[11px] text-on-surface-muted uppercase tracking-wider">Calculated Total Charges</span>
+                <span className="font-mono text-sm font-semibold text-white">
+                  {formatINR(Number(formData.TotalCharges || (Number(formData.tenure || 0) * Number(formData.MonthlyCharges || 0))), 2)}
+                </span>
+              </div>
 
-                  <div className="space-y-2">
-                    <label className={FORM_LABEL_CLASS}>Monthly Charges (₹)</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      name="MonthlyCharges"
-                      value={formData.MonthlyCharges ?? ''}
-                      onChange={handleChange}
-                      disabled={isDatasetMode}
-                      className={`${FORM_CONTROL_CLASS} ${isDatasetMode ? 'opacity-85 cursor-not-allowed bg-surface-low/40' : ''}`}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className={FORM_LABEL_CLASS}>Contract Type</label>
-                    {isDatasetMode ? (
-                      <input
-                        type="text"
-                        value={formData.Contract || ''}
-                        disabled
-                        className={`${FORM_CONTROL_CLASS} opacity-85 cursor-not-allowed bg-surface-low/40`}
-                      />
-                    ) : (
-                      <select
-                        name="Contract"
-                        value={formData.Contract}
-                        onChange={handleChange}
-                        className={FORM_CONTROL_CLASS}
-                      >
-                        <option value="Month-to-month">Month-to-month</option>
-                        <option value="One year">One year</option>
-                        <option value="Two year">Two year</option>
-                      </select>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className={FORM_LABEL_CLASS}>Internet Service</label>
-                    {isDatasetMode ? (
-                      <input
-                        type="text"
-                        value={formData.InternetService || ''}
-                        disabled
-                        className={`${FORM_CONTROL_CLASS} opacity-85 cursor-not-allowed bg-surface-low/40`}
-                      />
-                    ) : (
-                      <select
-                        name="InternetService"
-                        value={formData.InternetService}
-                        onChange={handleChange}
-                        className={FORM_CONTROL_CLASS}
-                      >
-                        <option value="Fiber optic">Fiber optic</option>
-                        <option value="DSL">DSL</option>
-                        <option value="No">No</option>
-                      </select>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className={FORM_LABEL_CLASS}>Tech Support</label>
-                    {isDatasetMode ? (
-                      <input
-                        type="text"
-                        value={formData.TechSupport || ''}
-                        disabled
-                        className={`${FORM_CONTROL_CLASS} opacity-85 cursor-not-allowed bg-surface-low/40`}
-                      />
-                    ) : (
-                      <select
-                        name="TechSupport"
-                        value={formData.TechSupport}
-                        onChange={handleChange}
-                        className={FORM_CONTROL_CLASS}
-                      >
-                        <option value="No">No</option>
-                        <option value="Yes">Yes</option>
-                      </select>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className={FORM_LABEL_CLASS}>Online Security</label>
-                    {isDatasetMode ? (
-                      <input
-                        type="text"
-                        value={formData.OnlineSecurity || ''}
-                        disabled
-                        className={`${FORM_CONTROL_CLASS} opacity-85 cursor-not-allowed bg-surface-low/40`}
-                      />
-                    ) : (
-                      <select
-                        name="OnlineSecurity"
-                        value={formData.OnlineSecurity}
-                        onChange={handleChange}
-                        className={FORM_CONTROL_CLASS}
-                      >
-                        <option value="No">No</option>
-                        <option value="Yes">Yes</option>
-                      </select>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className={FORM_LABEL_CLASS}>Payment Method</label>
-                    {isDatasetMode ? (
-                      <input
-                        type="text"
-                        value={formData.PaymentMethod || ''}
-                        disabled
-                        className={`${FORM_CONTROL_CLASS} opacity-85 cursor-not-allowed bg-surface-low/40`}
-                      />
-                    ) : (
-                      <select
-                        name="PaymentMethod"
-                        value={formData.PaymentMethod}
-                        onChange={handleChange}
-                        className={FORM_CONTROL_CLASS}
-                      >
-                        <option value="Electronic check">Electronic check</option>
-                        <option value="Mailed check">Mailed check</option>
-                        <option value="Bank transfer (automatic)">Bank transfer (automatic)</option>
-                        <option value="Credit card (automatic)">Credit card (automatic)</option>
-                      </select>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className={FORM_LABEL_CLASS}>Paperless Billing</label>
-                    {isDatasetMode ? (
-                      <input
-                        type="text"
-                        value={formData.PaperlessBilling || ''}
-                        disabled
-                        className={`${FORM_CONTROL_CLASS} opacity-85 cursor-not-allowed bg-surface-low/40`}
-                      />
-                    ) : (
-                      <select
-                        name="PaperlessBilling"
-                        value={formData.PaperlessBilling}
-                        onChange={handleChange}
-                        className={FORM_CONTROL_CLASS}
-                      >
-                        <option value="Yes">Yes</option>
-                        <option value="No">No</option>
-                      </select>
-                    )}
-                  </div>
-
-                  <div className="space-y-2 md:col-span-2 xl:col-span-1">
-                    <label className={FORM_LABEL_CLASS}>Senior Citizen</label>
-                    {isDatasetMode ? (
-                      <input
-                        type="text"
-                        value={Number(formData.SeniorCitizen) === 1 ? 'Yes (1)' : 'No (0)'}
-                        disabled
-                        className={`${FORM_CONTROL_CLASS} opacity-85 cursor-not-allowed bg-surface-low/40`}
-                      />
-                    ) : (
-                      <select
-                        name="SeniorCitizen"
-                        value={formData.SeniorCitizen}
-                        onChange={handleChange}
-                        className={FORM_CONTROL_CLASS}
-                      >
-                        <option value={0}>No</option>
-                        <option value={1}>Yes</option>
-                      </select>
-                    )}
-                  </div>
-                </div>
-
-                <div className="p-4 rounded-xl bg-surface-high/25 border border-primary/15">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-on-surface-variant mb-1">Total Charges</p>
-                  <p className="text-sm text-on-surface leading-relaxed">
-                    Charges:{' '}
-                    <span className="text-primary font-semibold">
-                      {formatINR(Number(formData.TotalCharges || (Number(formData.tenure || 0) * Number(formData.MonthlyCharges || 0))), 2)}
-                    </span>
-                  </p>
-                </div>
-
-                {!isDatasetMode ? (
-                  <button
-                    type="submit"
-                    disabled={isLoading}
-                    className="w-full py-3.5 rounded-xl bg-primary text-slate-950 font-bold text-sm tracking-[0.11em] transition-all duration-300 shadow-[0_0_24px_rgba(34,211,238,0.28)] hover:bg-cyan-300 disabled:opacity-50"
-                  >
-                    {isLoading ? 'Analyzing...' : 'Run Prediction'}
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handleBackToDataset}
-                    className="w-full py-3.5 rounded-xl bg-primary text-slate-950 font-bold text-sm tracking-[0.11em] transition-all duration-300 shadow-[0_0_24px_rgba(34,211,238,0.28)] hover:bg-cyan-300"
-                  >
-                    ← Back to Dataset Results
-                  </button>
-                )}
-              </form>
-            </div>
+              {!isDatasetMode ? (
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full py-3.5 px-6 rounded-lg bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:from-sky-400 hover:via-blue-500 hover:to-indigo-500 text-white font-bold text-sm tracking-wide shadow-[0_4px_20px_rgba(2,132,199,0.45)] border border-sky-400/40 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Sparkles size={16} className="text-sky-200" />
+                  <span>{isLoading ? 'Running Inference...' : 'Calculate Churn Probability'}</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleBackToDataset}
+                  className="w-full py-3.5 px-6 rounded-lg bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:from-sky-400 hover:via-blue-500 hover:to-indigo-500 text-white font-bold text-sm tracking-wide shadow-[0_4px_20px_rgba(2,132,199,0.45)] border border-sky-400/40 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.99]"
+                >
+                  <Sparkles size={16} className="text-sky-200" />
+                  <span>Return to Dataset Results</span>
+                </button>
+              )}
+            </form>
           </GlassCard>
         </section>
-
         {/* Right Column: Prediction Results & Insights */}
-        <section className="xl:col-span-7 flex flex-col gap-6 xl:min-h-[calc(100vh-12rem)]">
+        <section className="xl:col-span-7 space-y-6">
           {error && (
-            <div className="glass-panel border-l-4 border-tertiary p-5 rounded-r-xl luxury-border">
-              <p className="font-mono text-tertiary text-sm">{error}</p>
+            <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-xs font-mono text-red-400">
+              {error}
             </div>
           )}
 
           {isLoading && !result && (
-            <div className="glass-card rounded-2xl min-h-[520px] xl:min-h-[calc(100vh-16rem)] border border-primary/20 flex items-center justify-center">
-              <p className="font-mono text-primary tracking-[0.16em] text-xs uppercase animate-pulse">Analyzing customer profile...</p>
+            <div className="rounded-xl border border-white/[0.08] bg-surface p-12 flex flex-col items-center justify-center gap-3 text-center min-h-[380px]">
+              <div className="h-6 w-6 rounded-full border-2 border-brand-light/30 border-t-brand-light animate-spin" />
+              <p className="font-mono text-xs text-on-surface-variant uppercase tracking-wider">
+                Processing customer profile through XGBoost...
+              </p>
             </div>
           )}
 
           {!result && !isLoading && !error && (
-            <div className="flex-1 glass-card rounded-2xl flex items-center justify-center border border-dashed border-primary/20 min-h-[520px] xl:min-h-[calc(100vh-16rem)]">
-              <p className="font-mono text-on-surface-variant tracking-[0.12em] text-xs text-center px-8 leading-relaxed uppercase">
-                Fill the form and run prediction to view results
+            <div className="rounded-xl border border-dashed border-white/[0.1] bg-surface-low/50 p-12 flex flex-col items-center justify-center gap-2 text-center min-h-[380px]">
+              <AlertCircle size={24} className="text-on-surface-muted" />
+              <p className="font-sans text-sm font-medium text-on-surface">Ready for Inference</p>
+              <p className="font-sans text-xs text-on-surface-muted max-w-sm">
+                Adjust parameters on the left or click "Auto-fill Sample", then run prediction to generate risk analytics.
               </p>
             </div>
           )}
 
           {result && !isLoading && (
-            <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-700">
+            <div className="space-y-6">
               {/* Churn Probability Banner */}
-              <div className="glass-panel p-6 md:p-7 rounded-2xl relative overflow-hidden group luxury-border">
-                <div
-                  className={`absolute top-0 right-0 h-56 w-56 rounded-full blur-[90px] -mr-20 -mt-20 transition-opacity duration-1000 opacity-25 ${
-                    result.risk_level === 'HIGH' ? 'bg-tertiary' : 'bg-primary'
-                  }`}
-                />
-                <div className="metric-chip mb-4">
-                  {isDatasetMode ? 'Batch Churn Probability' : 'Churn Probability'}
-                </div>
-                <div className="relative z-10 flex items-end gap-4 flex-wrap">
-                  <p
-                    className={`font-display text-5xl md:text-6xl font-bold tracking-tight ${
+              <GlassCard paddingClass="p-5 sm:p-6" className="space-y-4">
+                <div className="flex items-center justify-between gap-3 pb-3 border-b border-white/[0.06]">
+                  <span className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-on-surface-variant">
+                    {isDatasetMode ? 'Batch Model Inference' : 'Churn Probability Score'}
+                  </span>
+                  <span
+                    className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[11px] font-mono font-semibold uppercase tracking-wider border ${
                       result.risk_level === 'HIGH'
-                        ? 'text-tertiary risk-glow-text'
+                        ? 'bg-red-500/10 text-red-400 border-red-500/30'
                         : result.risk_level === 'MEDIUM'
-                        ? 'text-yellow-400'
-                        : 'text-green-400 glow-text'
+                        ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                        : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                    }`}
+                  >
+                    {result.risk_level} Risk
+                  </span>
+                </div>
+
+                <div className="flex items-baseline gap-4 flex-wrap">
+                  <span
+                    className={`font-mono text-5xl lg:text-6xl font-bold tracking-tight tabular-numbers ${
+                      result.risk_level === 'HIGH'
+                        ? 'text-red-400'
+                        : result.risk_level === 'MEDIUM'
+                        ? 'text-amber-400'
+                        : 'text-emerald-400'
                     }`}
                   >
                     {result.churn_probability}%
-                  </p>
-                  <p className="text-on-surface text-sm md:text-base pb-2">
-                    Risk Level:{' '}
-                    <span
-                      className={`font-bold px-2 py-0.5 rounded text-xs font-mono uppercase ${
-                        result.risk_level === 'HIGH'
-                          ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                          : result.risk_level === 'MEDIUM'
-                          ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-                          : 'bg-green-500/20 text-green-400 border border-green-500/30'
-                      }`}
-                    >
-                      {result.risk_level}
-                    </span>
-                  </p>
+                  </span>
+                  <div className="text-xs text-on-surface-muted max-w-md leading-relaxed">
+                    Estimated probability of customer cancellation within current contractual cycle.
+                  </div>
                 </div>
-                <div className="relative z-10 mt-4 font-sans text-on-surface text-sm md:text-[15px] leading-relaxed">
+
+                <div className="rounded-lg bg-surface-low p-3.5 border border-white/[0.06] text-xs text-on-surface-variant leading-relaxed">
                   {result.churn_explanation}
                 </div>
-              </div>
+              </GlassCard>
 
               {/* SHAP Factors Chart */}
               {hasShapValues && <ShapFactorsChart shapValues={result.shap_values} maxFeatures={8} />}
 
-              {/* PRODUCTION SAAS RETENTION STRATEGY & ECONOMICS SECTION */}
-              <div className="rounded-2xl border border-white/[0.08] bg-[#0b1322]/90 backdrop-blur-md p-6 sm:p-7 space-y-6 shadow-xl">
-                {/* Section Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-white/[0.07]">
+              {/* RETENTION STRATEGY & ECONOMICS */}
+              <div className="rounded-xl border border-white/[0.08] bg-surface p-5 sm:p-6 space-y-5 shadow-panel">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/[0.06]">
                   <div>
-                    <h3 className="font-sans text-lg sm:text-xl font-bold text-white tracking-tight">
-                      Retention Strategy &amp; Economics
+                    <h3 className="font-sans text-base sm:text-lg font-semibold text-white tracking-tight">
+                      Retention Economics &amp; Strategy
                     </h3>
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      AI-generated retention offers evaluated with backend financial economics
+                    <p className="text-xs text-on-surface-muted mt-0.5">
+                      NVIDIA Nemotron retention offers evaluated with backend financial economics
                     </p>
                   </div>
                   {retentionStrategy && (
-                    <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-mono font-medium bg-slate-800/80 text-slate-300 border border-slate-700/60">
-                        <Sparkles size={12} className="text-cyan-400" />
-                        {retentionStrategy.provider === 'nvidia' ? 'NVIDIA Nemotron' : 'Deterministic Rules'}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-mono bg-surface-low text-on-surface-variant border border-white/[0.08]">
+                        <Sparkles size={12} className="text-brand-light" />
+                        {retentionStrategy.provider === 'nvidia' ? 'NVIDIA Nemotron' : 'Rule Engine'}
                       </span>
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-mono font-medium bg-cyan-950/40 text-cyan-300 border border-cyan-800/40">
+                      <span className="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-mono bg-surface-low text-on-surface-muted border border-white/[0.06]">
                         24M Horizon · 60% Margin
                       </span>
                     </div>
@@ -601,50 +592,50 @@ export default function Predict() {
                 </div>
 
                 {loadingRetention && !retentionStrategy && (
-                  <div className="py-12 text-center space-y-3">
-                    <div className="h-7 w-7 mx-auto rounded-full border-2 border-cyan-500/20 border-t-cyan-400 animate-spin" />
-                    <p className="font-mono text-xs text-slate-400 animate-pulse">
-                      Evaluating retention offers &amp; customer economics...
+                  <div className="py-8 text-center space-y-2">
+                    <div className="h-6 w-6 mx-auto rounded-full border-2 border-brand-light/30 border-t-brand-light animate-spin" />
+                    <p className="font-mono text-xs text-on-surface-muted">
+                      Synthesizing retention offers &amp; calculating ROI...
                     </p>
                   </div>
                 )}
 
                 {retentionStrategy && (
                   <>
-                    {/* 1. Customer Financial Profile (Horizontal summary with clean dividers) */}
+                    {/* 1. Customer Financial Profile */}
                     {retentionStrategy.customer_economics && (
-                      <div className="rounded-xl bg-white/[0.02] border border-white/[0.06] p-4 sm:p-5">
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-2 divide-y sm:divide-y-0 sm:divide-x divide-white/[0.06]">
-                          <div className="sm:px-3 first:pl-0">
-                            <span className="block text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1">
+                      <div className="rounded-lg bg-surface-low border border-white/[0.06] p-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 divide-y sm:divide-y-0 sm:divide-x divide-white/[0.06]">
+                          <div className="sm:px-2 first:pl-0">
+                            <span className="block text-[10px] font-mono text-on-surface-muted uppercase tracking-wider mb-1">
                               Remaining Horizon
                             </span>
-                            <span className="text-base sm:text-lg font-bold text-slate-200">
+                            <span className="font-mono text-base font-bold text-white tabular-numbers">
                               {retentionStrategy.customer_economics.remaining_months}{' '}
-                              <span className="text-xs font-normal text-slate-400 font-sans">Months</span>
+                              <span className="text-xs font-normal text-on-surface-muted font-sans">mo</span>
                             </span>
                           </div>
-                          <div className="pt-3 sm:pt-0 sm:px-3">
-                            <span className="block text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1">
+                          <div className="pt-3 sm:pt-0 sm:px-2">
+                            <span className="block text-[10px] font-mono text-on-surface-muted uppercase tracking-wider mb-1">
                               Future Revenue
                             </span>
-                            <span className="text-base sm:text-lg font-bold text-slate-200">
+                            <span className="font-mono text-base font-bold text-white tabular-numbers">
                               {formatINR(retentionStrategy.customer_economics.future_revenue)}
                             </span>
                           </div>
-                          <div className="pt-3 sm:pt-0 sm:px-3">
-                            <span className="block text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1">
+                          <div className="pt-3 sm:pt-0 sm:px-2">
+                            <span className="block text-[10px] font-mono text-amber-400/80 uppercase tracking-wider mb-1">
                               Revenue at Risk
                             </span>
-                            <span className="text-base sm:text-lg font-bold text-amber-400">
+                            <span className="font-mono text-base font-bold text-amber-400 tabular-numbers">
                               {formatINR(retentionStrategy.customer_economics.expected_revenue_at_risk)}
                             </span>
                           </div>
-                          <div className="pt-3 sm:pt-0 sm:px-3 last:pr-0">
-                            <span className="block text-[10px] font-mono text-cyan-400 uppercase tracking-wider mb-1 font-semibold">
+                          <div className="pt-3 sm:pt-0 sm:px-2 last:pr-0">
+                            <span className="block text-[10px] font-mono text-brand-light uppercase tracking-wider mb-1">
                               Profit at Risk
                             </span>
-                            <span className="text-lg sm:text-xl font-bold text-cyan-300">
+                            <span className="font-mono text-base font-bold text-brand-light tabular-numbers">
                               {formatINR(retentionStrategy.customer_economics.expected_profit_at_risk)}
                             </span>
                           </div>
@@ -652,23 +643,22 @@ export default function Predict() {
                       </div>
                     )}
 
-                    {/* 2. Recommended Action (Focal decision panel) */}
+                    {/* 2. Recommended Action */}
                     {retentionStrategy.best_offer && (
                       <div
-                        className={`rounded-xl border p-5 sm:p-6 space-y-4 transition-all ${
+                        className={`rounded-xl border p-4 sm:p-5 space-y-3.5 ${
                           retentionStrategy.decision_code === 'RETAIN'
-                            ? 'bg-gradient-to-b from-cyan-950/25 to-slate-900/40 border-cyan-500/30 shadow-[0_4px_20px_rgba(0,0,0,0.25)]'
-                            : 'bg-slate-900/50 border-slate-700/50'
+                            ? 'bg-brand/5 border-brand/30 shadow-sm'
+                            : 'bg-surface-low border-white/[0.08]'
                         }`}
                       >
-                        {/* Header Row */}
-                        <div className="flex flex-wrap items-center justify-between gap-3">
-                          <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
-                            <Award size={15} />
-                            Recommended Strategy Action
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-brand-light flex items-center gap-1.5">
+                            <Award size={14} />
+                            Primary Strategic Decision
                           </span>
                           <span
-                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold tracking-wide border ${
+                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-mono font-semibold tracking-wide border ${
                               retentionStrategy.decision_code === 'RETAIN'
                                 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                                 : 'bg-rose-500/10 text-rose-400 border-rose-500/30'
@@ -688,61 +678,59 @@ export default function Predict() {
                           </span>
                         </div>
 
-                        {/* Title & Reason */}
                         <div>
-                          <h4 className="text-lg sm:text-xl font-bold text-white tracking-tight">
+                          <h4 className="font-sans text-base font-bold text-white tracking-tight">
                             {retentionStrategy.best_offer.title}
                           </h4>
-                          <p className="text-xs text-slate-300 mt-1.5 leading-relaxed max-w-3xl">
+                          <p className="text-xs text-on-surface-variant mt-1 leading-relaxed">
                             {retentionStrategy.best_offer.reason}
                           </p>
                         </div>
 
-                        {/* Financial Impact Breakdown (Separate Net Benefit & ROI) */}
-                        <div className="pt-4 border-t border-white/[0.08]">
-                          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 divide-y sm:divide-y-0 sm:divide-x divide-white/[0.06]">
+                        <div className="pt-3 border-t border-white/[0.06]">
+                          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 divide-y sm:divide-y-0 sm:divide-x divide-white/[0.06]">
                             <div className="sm:px-2 first:pl-0">
-                              <span className="block text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1">
+                              <span className="block text-[10px] font-mono text-on-surface-muted uppercase tracking-wider mb-0.5">
                                 Retention Cost
                               </span>
-                              <span className="text-base font-semibold text-slate-200">
+                              <span className="font-mono text-sm font-semibold text-white tabular-numbers">
                                 {formatINR(retentionStrategy.best_offer.retention_cost)}
                               </span>
                             </div>
-                            <div className="pt-3 sm:pt-0 sm:px-2">
-                              <span className="block text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1">
+                            <div className="pt-2 sm:pt-0 sm:px-2">
+                              <span className="block text-[10px] font-mono text-on-surface-muted uppercase tracking-wider mb-0.5">
                                 Scenario Success
                               </span>
-                              <span className="text-base font-semibold text-cyan-300">
+                              <span className="font-mono text-sm font-semibold text-brand-light tabular-numbers">
                                 {retentionStrategy.best_offer.scenario_success_rate}%
                               </span>
                             </div>
-                            <div className="pt-3 sm:pt-0 sm:px-2">
-                              <span className="block text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1">
+                            <div className="pt-2 sm:pt-0 sm:px-2">
+                              <span className="block text-[10px] font-mono text-on-surface-muted uppercase tracking-wider mb-0.5">
                                 Value Protected
                               </span>
-                              <span className="text-base font-semibold text-slate-200">
+                              <span className="font-mono text-sm font-semibold text-white tabular-numbers">
                                 {formatINR(retentionStrategy.best_offer.expected_value_protected)}
                               </span>
                             </div>
-                            <div className="pt-3 sm:pt-0 sm:px-2">
-                              <span className="block text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1">
+                            <div className="pt-2 sm:pt-0 sm:px-2">
+                              <span className="block text-[10px] font-mono text-on-surface-muted uppercase tracking-wider mb-0.5">
                                 Net Benefit
                               </span>
                               <span
-                                className={`text-base font-bold ${
+                                className={`font-mono text-sm font-bold tabular-numbers ${
                                   retentionStrategy.best_offer.net_benefit > 0 ? 'text-emerald-400' : 'text-rose-400'
                                 }`}
                               >
                                 {formatINR(retentionStrategy.best_offer.net_benefit)}
                               </span>
                             </div>
-                            <div className="pt-3 sm:pt-0 sm:px-2 last:pr-0">
-                              <span className="block text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1 font-semibold">
+                            <div className="pt-2 sm:pt-0 sm:px-2 last:pr-0">
+                              <span className="block text-[10px] font-mono text-brand-light uppercase tracking-wider mb-0.5 font-semibold">
                                 Expected ROI
                               </span>
                               <span
-                                className={`text-xl font-bold tracking-tight ${
+                                className={`font-mono text-base font-bold tabular-numbers ${
                                   retentionStrategy.best_offer.roi > 0 ? 'text-emerald-400' : 'text-rose-400'
                                 }`}
                               >
@@ -754,15 +742,13 @@ export default function Predict() {
                       </div>
                     )}
 
-                    {/* 3. All Evaluated Strategy Options (Clean 3-scenario comparison grid) */}
-                    <div className="space-y-3 pt-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-mono font-semibold uppercase tracking-wider text-slate-400">
-                          Evaluated Strategy Scenarios (3 Options)
-                        </span>
-                      </div>
+                    {/* 3. Evaluated Strategy Comparison */}
+                    <div className="space-y-3 pt-1">
+                      <span className="text-[11px] font-mono font-medium uppercase tracking-wider text-on-surface-muted">
+                        Evaluated Scenario Matrix
+                      </span>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                         {retentionStrategy.offers.map((offer, idx) => {
                           const isBest =
                             retentionStrategy.best_offer &&
@@ -771,57 +757,57 @@ export default function Predict() {
                           return (
                             <div
                               key={idx}
-                              className={`rounded-xl border p-4 sm:p-5 flex flex-col justify-between transition-all ${
+                              className={`rounded-lg border p-3.5 flex flex-col justify-between space-y-3 transition-all ${
                                 isBest
-                                  ? 'bg-cyan-950/15 border-cyan-500/35 shadow-sm'
-                                  : 'bg-white/[0.02] border-white/[0.06] hover:border-white/[0.12]'
+                                  ? 'bg-brand/10 border-brand/35'
+                                  : 'bg-surface-low border-white/[0.06]'
                               }`}
                             >
-                              <div className="space-y-2">
-                                <div className="flex items-center justify-between gap-2">
-                                  <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider bg-slate-800/80 text-slate-300 border border-slate-700/60">
+                              <div className="space-y-1.5">
+                                <div className="flex items-center justify-between gap-1.5">
+                                  <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider bg-surface-high text-on-surface-variant border border-white/[0.08]">
                                     {offer.type === 'discount'
                                       ? 'Discount'
                                       : offer.type === 'support'
-                                      ? 'Support Package'
-                                      : 'Contract Switch'}
+                                      ? 'Support'
+                                      : 'Contract'}
                                   </span>
                                   {isBest && (
-                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider bg-cyan-500/10 text-cyan-300 border border-cyan-500/25 font-semibold">
-                                      Recommended
+                                    <span className="text-[10px] font-mono font-semibold text-emerald-400 uppercase">
+                                      Optimal
                                     </span>
                                   )}
                                 </div>
-                                <h5 className="font-semibold text-sm text-slate-100 leading-snug">
+                                <h5 className="font-semibold text-xs text-white leading-snug">
                                   {offer.title}
                                 </h5>
-                                <p className="text-xs text-slate-400 leading-relaxed line-clamp-2">
+                                <p className="text-[11px] text-on-surface-muted leading-relaxed line-clamp-2">
                                   {offer.reason}
                                 </p>
                               </div>
 
-                              <div className="pt-4 mt-3 border-t border-white/[0.06] space-y-1.5 text-xs font-mono">
+                              <div className="pt-2.5 border-t border-white/[0.06] space-y-1 text-[11px] font-mono">
                                 <div className="flex justify-between">
-                                  <span className="text-slate-400">Cost:</span>
-                                  <span className="text-slate-200 font-medium">{formatINR(offer.retention_cost)}</span>
+                                  <span className="text-on-surface-muted">Cost:</span>
+                                  <span className="text-white tabular-numbers">{formatINR(offer.retention_cost)}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span className="text-slate-400">Scenario Success:</span>
-                                  <span className="text-cyan-300">{offer.scenario_success_rate}%</span>
+                                  <span className="text-on-surface-muted">Success:</span>
+                                  <span className="text-brand-light tabular-numbers">{offer.scenario_success_rate}%</span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span className="text-slate-400">Value Protected:</span>
-                                  <span className="text-slate-200 font-medium">{formatINR(offer.expected_value_protected)}</span>
+                                  <span className="text-on-surface-muted">Protected:</span>
+                                  <span className="text-white tabular-numbers">{formatINR(offer.expected_value_protected)}</span>
                                 </div>
-                                <div className="flex justify-between pt-2 border-t border-white/[0.06]">
-                                  <span className="text-slate-400">Net Benefit:</span>
-                                  <span className={`font-semibold ${offer.net_benefit > 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                <div className="flex justify-between pt-1 border-t border-white/[0.06]">
+                                  <span className="text-on-surface-muted">Net:</span>
+                                  <span className={`font-semibold tabular-numbers ${offer.net_benefit > 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                                     {formatINR(offer.net_benefit)}
                                   </span>
                                 </div>
                                 <div className="flex justify-between items-baseline">
-                                  <span className="text-slate-400 font-semibold">ROI:</span>
-                                  <span className={`text-sm font-bold ${offer.roi > 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                  <span className="text-on-surface-muted">ROI:</span>
+                                  <span className={`text-xs font-bold tabular-numbers ${offer.roi > 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                                     {offer.roi}x
                                   </span>
                                 </div>
@@ -832,14 +818,12 @@ export default function Predict() {
                       </div>
                     </div>
 
-                    {/* 4. Footnote Disclaimer */}
-                    <p className="text-[11px] text-slate-500 italic text-center pt-2">
+                    <p className="text-[11px] text-on-surface-muted italic text-center pt-1 font-sans">
                       * {retentionStrategy.disclaimer}
                     </p>
                   </>
                 )}
               </div>
-
             </div>
           )}
         </section>

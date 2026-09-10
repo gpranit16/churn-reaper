@@ -16,6 +16,9 @@ export default function App() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="predict" element={<Predict />} />
           <Route path="dataset-analysis" element={<DatasetAnalysis />} />
+          <Route path="datasetanalysis" element={<Navigate to="/dataset-analysis" replace />} />
+          <Route path="dataset_analysis" element={<Navigate to="/dataset-analysis" replace />} />
+          <Route path="dataset" element={<Navigate to="/dataset-analysis" replace />} />
           <Route path="roi" element={<ROISimulator />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>

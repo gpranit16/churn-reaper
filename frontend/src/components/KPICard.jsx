@@ -2,25 +2,40 @@ import GlassCard from './GlassCard';
 
 export default function KPICard({ title, value, isRisk = false, prefix = '', subtitle = '' }) {
   return (
-    <GlassCard glow={true} className="h-full">
-      <div className="relative z-10">
-        <h3 className="font-sans text-lg font-medium text-on-surface-variant mb-2">{title}</h3>
-        {subtitle && <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-on-surface-variant/60 mb-5">{subtitle}</p>}
-        <div className="flex items-baseline gap-2">
-          {prefix && <span className="text-xl font-mono text-on-surface-variant/50">{prefix}</span>}
-          <span className={`font-display text-5xl font-bold tracking-tight ${isRisk ? 'text-tertiary risk-glow-text' : 'text-zinc-200'}`}>
-            {value}
+    <GlassCard paddingClass="p-5" className="h-full flex flex-col justify-between">
+      <div>
+        <div className="flex items-center justify-between gap-2 mb-1.5">
+          <span className="font-mono text-[11px] font-medium uppercase tracking-[0.08em] text-on-surface-variant">
+            {title}
           </span>
+          {isRisk ? (
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider bg-red-500/10 text-red-400 border border-red-500/20">
+              Risk Alert
+            </span>
+          ) : (
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider bg-slate-800 text-slate-400 border border-slate-700/50">
+              Active
+            </span>
+          )}
         </div>
+        {subtitle && (
+          <p className="text-xs text-on-surface-muted mb-3 font-normal">
+            {subtitle}
+          </p>
+        )}
       </div>
-      {isRisk && (
-        <div className="absolute top-6 right-6 w-3 h-3 rounded-full bg-tertiary animate-pulse shadow-ambient-tertiary" />
-      )}
-      {!isRisk && (
-        <div className="absolute top-6 right-6 w-3 h-3 rounded-full bg-primary/80 animate-pulse shadow-ambient-primary" />
-      )}
-      <div className="absolute inset-x-6 bottom-4 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
-      <div className="metric-chip mt-6">Live</div>
+
+      <div className="flex items-baseline gap-1.5 pt-2">
+        {prefix && <span className="text-sm font-mono text-on-surface-variant">{prefix}</span>}
+        <span
+          className={`font-mono text-2xl lg:text-3xl font-bold tracking-tight tabular-numbers ${
+            isRisk ? 'text-red-400' : 'text-on-surface'
+          }`}
+        >
+          {value}
+        </span>
+      </div>
     </GlassCard>
   );
 }
+

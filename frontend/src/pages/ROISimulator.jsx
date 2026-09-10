@@ -14,6 +14,7 @@ import {
 } from 'recharts';
 import GlassCard from '../components/GlassCard';
 import { formatINR, formatIndianNumber } from '../utils/currency';
+import { Calculator, ArrowRight, TrendingUp, CheckCircle2 } from 'lucide-react';
 
 export default function ROISimulator() {
   const [params, setParams] = useState({
@@ -49,10 +50,10 @@ export default function ROISimulator() {
     const breakEven = params.arpu > 0 ? (params.retentionCost / (params.arpu * 12)) * 100 : 0;
 
     const breakdown = [
-      { label: 'Revenue at Risk', amount: revenueAtRiskValue },
-      { label: 'Saved Revenue', amount: revenueSavedValue },
+      { label: 'Exposed ARR', amount: revenueAtRiskValue },
+      { label: 'Protected ARR', amount: revenueSavedValue },
       { label: 'Campaign Cost', amount: campaignCostValue },
-      { label: 'Net Impact', amount: netValue },
+      { label: 'Net Gain', amount: netValue },
     ];
 
     const scenarios = Array.from({ length: 10 }, (_, index) => {
@@ -80,177 +81,296 @@ export default function ROISimulator() {
   }, [params]);
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 pb-12">
-      <header className="glass-panel p-6 md:p-8 lg:p-10 relative overflow-hidden">
-        <div className="absolute -right-20 -top-20 h-48 w-48 rounded-full bg-indigo-500/25 blur-[90px]" />
-        <div className="relative z-10">
-          <div className="metric-chip mb-4">ROI Simulator · INR</div>
-          <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight premium-gradient-text">Retention ROI Calculator</h2>
-          <p className="font-sans text-sm text-on-surface-variant mt-3 max-w-4xl">
-            Estimate whether your retention campaign is profitable by adjusting inputs and comparing cost vs saved revenue.
+    <div className="space-y-6 pb-12">
+      {/* Header */}
+      <header className="rounded-xl border border-white/[0.08] bg-surface p-5 sm:p-6 shadow-panel flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="font-mono text-[11px] font-semibold uppercase tracking-wider text-brand-light">
+              Financial Economics Lab
+            </span>
+            <span className="text-white/[0.2] text-xs">/</span>
+            <span className="text-xs text-on-surface-muted">Scenario Sensitivity</span>
+          </div>
+          <h1 className="font-sans text-xl sm:text-2xl font-bold text-white tracking-tight">
+            Retention ROI &amp; Budget Optimization Calculator
+          </h1>
+          <p className="text-xs sm:text-sm text-on-surface-variant mt-1 max-w-3xl">
+            Simulate retention campaign payback horizons, break-even save rates, and bottom-line margin expansion in INR.
           </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/[0.08] bg-surface-low text-xs font-mono text-on-surface-variant">
+            <Calculator size={13} className="text-brand-light" />
+            Active Model: 12M Horizon
+          </span>
         </div>
       </header>
 
-      <GlassCard glow>
-        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div>
-            <h3 className="text-xl font-semibold text-zinc-200 mb-4">How this works</h3>
-            <ol className="space-y-3 text-sm text-on-surface-variant list-decimal list-inside">
-              <li>Estimate annual revenue exposed to churn using high-risk customer count and monthly revenue.</li>
-              <li>Apply your target save rate to estimate how many customers can be retained.</li>
-              <li>Calculate saved annual revenue from retained customers.</li>
-              <li>Subtract campaign cost to get net impact and ROI percentage.</li>
-            </ol>
-          </div>
-          <div className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
-            <p className="subtle-legend mb-3">Formula Reference</p>
-            <div className="space-y-2 text-sm text-on-surface-variant">
-              <p><span className="text-zinc-200">Revenue at Risk</span> = Customers × ARPU × 12</p>
-              <p><span className="text-zinc-200">Customers Saved</span> = Customers × Target Save Rate</p>
-              <p><span className="text-zinc-200">Saved Revenue</span> = Customers Saved × ARPU × 12</p>
-              <p><span className="text-zinc-200">Net Impact</span> = Saved Revenue − Campaign Cost</p>
-              <p><span className="text-zinc-200">ROI %</span> = (Net Impact / Campaign Cost) × 100</p>
+      {/* Main Two-Column Layout */}
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+        {/* Left Column: Sliders & Parameter Control */}
+        <section className="xl:col-span-4 space-y-6">
+          <GlassCard paddingClass="p-5 sm:p-6" className="space-y-5">
+            <div className="pb-3 border-b border-white/[0.08]">
+              <h3 className="font-sans text-base font-semibold text-white tracking-tight">
+                Campaign Variables
+              </h3>
+              <p className="text-xs text-on-surface-muted mt-0.5">
+                Adjust cohort size, customer revenue, and retention budget
+              </p>
             </div>
-          </div>
-        </div>
-      </GlassCard>
 
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-        <div className="xl:col-span-4 space-y-6">
-          <GlassCard glow>
-            <div className="relative z-10">
-              <h3 className="font-sans text-xl font-medium text-zinc-200 mb-8">Simulation Inputs</h3>
-
-              <div className="space-y-8">
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <label className="font-mono text-xs text-on-surface-variant uppercase tracking-wider">High Risk Customers</label>
-                    <span className="font-mono text-sm text-primary">{formatIndianNumber(params.customers)}</span>
-                  </div>
-                  <input type="range" name="customers" min="100" max="5000" step="100" value={params.customers} onChange={handleChange} className="w-full accent-primary bg-surface h-1 rounded-full appearance-none" />
+            <div className="space-y-5">
+              <div className="space-y-2">
+                <div className="flex justify-between items-baseline">
+                  <label className="font-mono text-[11px] uppercase tracking-wider text-on-surface-variant">
+                    Target High-Risk Accounts
+                  </label>
+                  <span className="font-mono text-xs font-bold text-brand-light tabular-numbers">
+                    {formatIndianNumber(params.customers)}
+                  </span>
                 </div>
-
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <label className="font-mono text-xs text-on-surface-variant uppercase tracking-wider">Avg Monthly Revenue (₹)</label>
-                    <span className="font-mono text-sm text-primary">{formatINR(params.arpu)}</span>
-                  </div>
-                  <input type="range" name="arpu" min="1000" max="25000" step="500" value={params.arpu} onChange={handleChange} className="w-full accent-primary bg-surface h-1 rounded-full appearance-none" />
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <label className="font-mono text-xs text-on-surface-variant uppercase tracking-wider">Retention Cost / User (₹)</label>
-                    <span className="font-mono text-sm text-tertiary">{formatINR(params.retentionCost)}</span>
-                  </div>
-                  <input type="range" name="retentionCost" min="500" max="10000" step="250" value={params.retentionCost} onChange={handleChange} className="w-full accent-tertiary bg-surface h-1 rounded-full appearance-none" />
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <label className="font-mono text-xs text-on-surface-variant uppercase tracking-wider">Target Save Rate (%)</label>
-                    <span className="font-mono text-sm text-primary">{params.targetRate}%</span>
-                  </div>
-                  <input type="range" name="targetRate" min="5" max="50" step="1" value={params.targetRate} onChange={handleChange} className="w-full accent-primary bg-surface h-1 rounded-full appearance-none" />
-                </div>
+                <input
+                  type="range"
+                  name="customers"
+                  min="100"
+                  max="5000"
+                  step="100"
+                  value={params.customers}
+                  onChange={handleChange}
+                  className="w-full accent-brand h-1.5 bg-surface-low rounded-lg appearance-none cursor-pointer"
+                />
               </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between items-baseline">
+                  <label className="font-mono text-[11px] uppercase tracking-wider text-on-surface-variant">
+                    Average Monthly Revenue (ARPU)
+                  </label>
+                  <span className="font-mono text-xs font-bold text-white tabular-numbers">
+                    {formatINR(params.arpu)}
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  name="arpu"
+                  min="1000"
+                  max="25000"
+                  step="500"
+                  value={params.arpu}
+                  onChange={handleChange}
+                  className="w-full accent-brand h-1.5 bg-surface-low rounded-lg appearance-none cursor-pointer"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between items-baseline">
+                  <label className="font-mono text-[11px] uppercase tracking-wider text-on-surface-variant">
+                    Offer Budget Per Account
+                  </label>
+                  <span className="font-mono text-xs font-bold text-white tabular-numbers">
+                    {formatINR(params.retentionCost)}
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  name="retentionCost"
+                  min="500"
+                  max="15000"
+                  step="250"
+                  value={params.retentionCost}
+                  onChange={handleChange}
+                  className="w-full accent-brand h-1.5 bg-surface-low rounded-lg appearance-none cursor-pointer"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between items-baseline">
+                  <label className="font-mono text-[11px] uppercase tracking-wider text-on-surface-variant">
+                    Target Save Rate
+                  </label>
+                  <span className="font-mono text-xs font-bold text-emerald-400 tabular-numbers">
+                    {params.targetRate}%
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  name="targetRate"
+                  min="5"
+                  max="60"
+                  step="1"
+                  value={params.targetRate}
+                  onChange={handleChange}
+                  className="w-full accent-emerald-500 h-1.5 bg-surface-low rounded-lg appearance-none cursor-pointer"
+                />
+              </div>
+            </div>
+
+            {/* Formula Reference box */}
+            <div className="p-3.5 rounded-lg bg-surface-low border border-white/[0.06] space-y-1.5 text-xs">
+              <span className="block font-mono text-[10px] text-on-surface-muted uppercase tracking-wider">
+                Break-Even Threshold
+              </span>
+              <p className="text-on-surface-variant">
+                Minimum save rate required for positive ROI:{' '}
+                <strong className="text-white font-mono">{breakEvenRate.toFixed(1)}%</strong>
+              </p>
+              <p className="text-[11px] text-on-surface-muted">
+                {marginVsBreakEven >= 0 ? (
+                  <span className="text-emerald-400">✓ Target rate is +{marginVsBreakEven.toFixed(1)}% above break-even.</span>
+                ) : (
+                  <span className="text-red-400">⚠ Target rate is below break-even by {Math.abs(marginVsBreakEven).toFixed(1)}%.</span>
+                )}
+              </p>
             </div>
           </GlassCard>
-        </div>
+        </section>
 
-        <div className="xl:col-span-8 flex flex-col gap-6">
-          <div className="glass-panel p-8 md:p-10 rounded-2xl text-center relative overflow-hidden group luxury-border">
-            <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-primary/20 rounded-full blur-[100px] -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
-            <p className="font-mono text-xs text-on-surface-variant uppercase tracking-[0.22em] mb-4">Projected ROI</p>
-            <div className={`font-display text-6xl md:text-8xl font-bold tracking-tighter glow-text ${netROIValue >= 0 ? 'text-primary' : 'text-tertiary'}`}>
-              {roiPercentage}%
+        {/* Right Column: Key ROI Metrics & Sensitivity Curves */}
+        <section className="xl:col-span-8 space-y-6">
+          {/* 4 Financial Outcome Cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+            <div className="p-4 rounded-xl bg-surface border border-white/[0.08] shadow-panel space-y-1">
+              <span className="block font-mono text-[10px] text-on-surface-muted uppercase tracking-wider">
+                Exposed ARR
+              </span>
+              <span className="font-mono text-lg font-bold text-white tabular-numbers">
+                {formatINR(revenueAtRisk)}
+              </span>
             </div>
-            <p className="font-sans text-on-surface-variant text-sm mt-4">
-              At <span className="text-zinc-200 font-semibold">{params.targetRate}%</span> save rate, you retain approximately <span className="text-zinc-200 font-semibold">{formatIndianNumber(customersSaved)}</span> customers.
-            </p>
+
+            <div className="p-4 rounded-xl bg-surface border border-white/[0.08] shadow-panel space-y-1">
+              <span className="block font-mono text-[10px] text-on-surface-muted uppercase tracking-wider">
+                Campaign Budget
+              </span>
+              <span className="font-mono text-lg font-bold text-white tabular-numbers">
+                {formatINR(campaignCost)}
+              </span>
+            </div>
+
+            <div className="p-4 rounded-xl bg-surface border border-white/[0.08] shadow-panel space-y-1">
+              <span className="block font-mono text-[10px] text-emerald-400/80 uppercase tracking-wider">
+                Net Annual Value
+              </span>
+              <span className={`font-mono text-lg font-bold tabular-numbers ${netROIValue > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                {formatINR(netROIValue)}
+              </span>
+            </div>
+
+            <div className="p-4 rounded-xl bg-surface border border-white/[0.08] shadow-panel space-y-1">
+              <span className="block font-mono text-[10px] text-brand-light uppercase tracking-wider font-semibold">
+                Expected ROI
+              </span>
+              <span className={`font-mono text-2xl font-bold tabular-numbers ${netROIValue > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                {roiPercentage}%
+              </span>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <GlassCard className="h-[320px]" glow>
-              <div className="relative z-10 h-full">
-                <p className="subtle-legend mb-3">Financial Breakdown (INR)</p>
-                <div className="h-[250px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={valueBreakdown} margin={{ top: 8, right: 10, left: 10, bottom: 10 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
-                      <XAxis dataKey="label" tick={{ fill: '#a1a1aa', fontSize: 11 }} axisLine={false} tickLine={false} />
-                      <YAxis tickFormatter={(v) => `${Math.round(v / 100000)}L`} tick={{ fill: '#a1a1aa', fontSize: 11 }} axisLine={false} tickLine={false} />
-                      <Tooltip
-                        formatter={(value) => formatINR(value)}
-                        contentStyle={{
-                          backgroundColor: '#050505',
-                          border: '1px solid rgba(255,255,255,0.12)',
-                          borderRadius: '10px',
-                          color: '#f4f4f5',
-                        }}
-                      />
-                      <Bar dataKey="amount" radius={[8, 8, 0, 0]}>
-                        {valueBreakdown.map((entry) => {
-                          const color = entry.label === 'Campaign Cost' ? '#ef4444' : entry.label === 'Net Impact' ? '#52525b' : '#a1a1aa';
-                          return <Cell key={entry.label} fill={color} />;
-                        })}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
+          {/* Value Breakdown & Sensitivity Chart */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Waterfall Value Breakdown */}
+            <GlassCard paddingClass="p-5 sm:p-6" className="space-y-4">
+              <div className="pb-3 border-b border-white/[0.06]">
+                <h3 className="font-sans text-base font-semibold text-white tracking-tight">
+                  Financial Waterfall
+                </h3>
+                <p className="text-xs text-on-surface-muted mt-0.5">
+                  Cost vs preserved annual revenue comparison
+                </p>
+              </div>
+
+              <div className="h-[220px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={valueBreakdown} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="2 2" stroke="rgba(255,255,255,0.05)" />
+                    <XAxis dataKey="label" tick={{ fill: '#94a3b8', fontSize: 10 }} axisLine={false} tickLine={false} />
+                    <YAxis
+                      tickFormatter={(val) => `₹${(val / 100000).toFixed(1)}L`}
+                      tick={{ fill: '#94a3b8', fontSize: 10, fontFamily: 'JetBrains Mono' }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Tooltip
+                      formatter={(val) => [formatINR(val), 'Amount']}
+                      contentStyle={{
+                        backgroundColor: '#0c1017',
+                        border: '1px solid rgba(255,255,255,0.12)',
+                        borderRadius: '8px',
+                        color: '#f1f5f9',
+                        fontFamily: 'JetBrains Mono',
+                        fontSize: '12px',
+                      }}
+                    />
+                    <Bar dataKey="amount" radius={[4, 4, 0, 0]} barSize={24}>
+                      {valueBreakdown.map((entry, idx) => (
+                        <Cell
+                          key={`cell-${idx}`}
+                          fill={idx === 2 ? '#ef4444' : idx === 3 ? '#10b981' : '#0284c7'}
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
             </GlassCard>
 
-            <GlassCard className="h-[320px]" glow>
-              <div className="relative z-10 h-full">
-                <p className="subtle-legend mb-3">Net Impact vs Save Rate</p>
-                <div className="h-[250px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={scenarioData} margin={{ top: 8, right: 10, left: 10, bottom: 10 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
-                      <XAxis dataKey="rate" tickFormatter={(v) => `${v}%`} tick={{ fill: '#a1a1aa', fontSize: 11 }} axisLine={false} tickLine={false} />
-                      <YAxis tickFormatter={(v) => `${Math.round(v / 100000)}L`} tick={{ fill: '#a1a1aa', fontSize: 11 }} axisLine={false} tickLine={false} />
-                      <Tooltip
-                        formatter={(value) => formatINR(value)}
-                        labelFormatter={(label) => `Save rate: ${label}%`}
-                        contentStyle={{
-                          backgroundColor: '#050505',
-                          border: '1px solid rgba(255,255,255,0.12)',
-                          borderRadius: '10px',
-                          color: '#f4f4f5',
-                        }}
-                      />
-                      <ReferenceLine y={0} stroke="rgba(255,255,255,0.25)" strokeDasharray="6 6" />
-                      <Line type="monotone" dataKey="netImpact" stroke="#ffffff" strokeWidth={2.4} dot={false} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
+            {/* Sensitivity Curve */}
+            <GlassCard paddingClass="p-5 sm:p-6" className="space-y-4">
+              <div className="pb-3 border-b border-white/[0.06]">
+                <h3 className="font-sans text-base font-semibold text-white tracking-tight">
+                  Save Rate Sensitivity Curve
+                </h3>
+                <p className="text-xs text-on-surface-muted mt-0.5">
+                  Net payoff projection across 5%–50% save rates
+                </p>
+              </div>
+
+              <div className="h-[220px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={scenarioData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="2 2" stroke="rgba(255,255,255,0.05)" />
+                    <XAxis
+                      dataKey="rate"
+                      tickFormatter={(val) => `${val}%`}
+                      tick={{ fill: '#94a3b8', fontSize: 10 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      tickFormatter={(val) => `₹${(val / 100000).toFixed(1)}L`}
+                      tick={{ fill: '#94a3b8', fontSize: 10, fontFamily: 'JetBrains Mono' }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Tooltip
+                      formatter={(val) => [formatINR(val), 'Net Gain']}
+                      labelFormatter={(val) => `Save Rate: ${val}%`}
+                      contentStyle={{
+                        backgroundColor: '#0c1017',
+                        border: '1px solid rgba(255,255,255,0.12)',
+                        borderRadius: '8px',
+                        color: '#f1f5f9',
+                        fontFamily: 'JetBrains Mono',
+                        fontSize: '12px',
+                      }}
+                    />
+                    <ReferenceLine y={0} stroke="rgba(255,255,255,0.2)" strokeDasharray="3 3" />
+                    <Line
+                      type="monotone"
+                      dataKey="netImpact"
+                      stroke="#10b981"
+                      strokeWidth={2}
+                      dot={{ r: 3, fill: '#10b981' }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
             </GlassCard>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="glass-panel p-5 rounded-xl border border-white/10">
-              <p className="subtle-legend mb-1">Break-even Save Rate</p>
-              <p className="font-display text-3xl text-zinc-200">{breakEvenRate.toFixed(1)}%</p>
-            </div>
-            <div className="glass-panel p-5 rounded-xl border border-white/10">
-              <p className="subtle-legend mb-1">Current Margin</p>
-              <p className={`font-display text-3xl ${marginVsBreakEven >= 0 ? 'text-primary' : 'text-tertiary'}`}>{marginVsBreakEven >= 0 ? '+' : ''}{marginVsBreakEven.toFixed(1)}%</p>
-            </div>
-            <div className="glass-panel p-5 rounded-xl border border-white/10">
-              <p className="subtle-legend mb-1">Net Impact (INR)</p>
-              <p className={`font-display text-3xl ${netROIValue >= 0 ? 'text-primary' : 'text-tertiary'}`}>{formatINR(netROIValue)}</p>
-            </div>
-          </div>
-
-          <div className="glass-panel p-5 rounded-xl border border-white/10">
-            <p className="text-sm text-on-surface-variant leading-relaxed">
-              <span className="text-zinc-200 font-semibold">Interpretation:</span> If your target save rate stays above break-even, the campaign is expected to generate positive net impact. In this scenario, your estimated annual exposure is <span className="text-zinc-200 font-semibold">{formatINR(revenueAtRisk)}</span>, campaign cost is <span className="text-zinc-200 font-semibold">{formatINR(campaignCost)}</span>, and projected saved revenue is <span className="text-zinc-200 font-semibold">{formatINR(revenueSaved)}</span>.
-            </p>
-          </div>
-        </div>
+        </section>
       </div>
     </div>
   );

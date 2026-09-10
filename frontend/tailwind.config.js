@@ -6,33 +6,45 @@ export default {
   ],
   theme: {
     fontFamily: {
-      display: ['Outfit', 'sans-serif'],
-      sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-      mono: ['"JetBrains Mono"', 'monospace'],
+      sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+      mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
     },
     extend: {
       colors: {
-        background: '#030303',
-        surface: '#05090f',
-        'surface-low': '#0b1322',
-        'surface-high': '#172034',
-        'on-surface': '#e2e8f0', // slate-200
-        'on-surface-variant': '#94a3b8', // slate 400
-        primary: '#22d3ee', // cyan-400
-        'primary-container': '#0369a1',
-        tertiary: '#f43f5e',
-        zinc: {
-          100: '#f0f9ff',
-          200: '#e2e8f0',
-          300: '#cbd5e1',
-          700: '#334155',
-          800: '#1e293b',
-          900: '#0f172a',
+        background: '#080b11',
+        surface: {
+          DEFAULT: '#0f141f',
+          low: '#0a0e17',
+          high: '#151b2a',
+          higher: '#1c2438',
+          border: 'rgba(255, 255, 255, 0.08)',
+          'border-subtle': 'rgba(255, 255, 255, 0.04)',
+        },
+        'on-surface': '#f1f5f9',
+        'on-surface-variant': '#94a3b8',
+        'on-surface-muted': '#64748b',
+        brand: {
+          DEFAULT: '#0284c7',
+          light: '#38bdf8',
+          dark: '#0369a1',
+          subtle: 'rgba(2, 132, 199, 0.12)',
+        },
+        risk: {
+          high: '#ef4444',
+          'high-bg': 'rgba(239, 68, 68, 0.12)',
+          'high-border': 'rgba(239, 68, 68, 0.28)',
+          medium: '#f59e0b',
+          'medium-bg': 'rgba(245, 158, 11, 0.12)',
+          'medium-border': 'rgba(245, 158, 11, 0.28)',
+          low: '#10b981',
+          'low-bg': 'rgba(16, 185, 129, 0.12)',
+          'low-border': 'rgba(16, 185, 129, 0.28)',
         },
       },
       boxShadow: {
-        'ambient-primary': '0 0 40px rgba(34, 211, 238, 0.12)',
-        'ambient-tertiary': '0 0 40px rgba(244, 63, 94, 0.1)',
+        'panel': '0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.24)',
+        'panel-hover': '0 4px 16px -2px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.3)',
+        'modal': '0 20px 40px -15px rgba(0, 0, 0, 0.7)',
       }
     },
   },

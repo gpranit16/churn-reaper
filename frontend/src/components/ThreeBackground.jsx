@@ -38,9 +38,9 @@ export default function ThreeBackground() {
             const velocities = new Float32Array(NODE_COUNT * 3);
             const colors = new Float32Array(NODE_COUNT * 3);
 
-            const primary = new THREE.Color('#22d3ee');
-            const secondary = new THREE.Color('#38bdf8');
-            const tertiary = new THREE.Color('#f43f5e');
+            const primary = new THREE.Color('#38bdf8');
+            const secondary = new THREE.Color('#64748b');
+            const tertiary = new THREE.Color('#94a3b8');
 
             for (let i = 0; i < NODE_COUNT; i++) {
                 const x = randomBetween(-BOUNDS, BOUNDS);
@@ -51,12 +51,12 @@ export default function ThreeBackground() {
                 positions[i * 3 + 1] = y;
                 positions[i * 3 + 2] = z;
 
-                velocities[i * 3] = randomBetween(-0.22, 0.22);
-                velocities[i * 3 + 1] = randomBetween(-0.22, 0.22);
-                velocities[i * 3 + 2] = randomBetween(-0.22, 0.22);
+                velocities[i * 3] = randomBetween(-0.1, 0.1);
+                velocities[i * 3 + 1] = randomBetween(-0.1, 0.1);
+                velocities[i * 3 + 2] = randomBetween(-0.1, 0.1);
 
                 const colorSeed = Math.random();
-                const color = colorSeed > 0.9 ? tertiary : colorSeed > 0.5 ? secondary : primary;
+                const color = colorSeed > 0.8 ? primary : colorSeed > 0.4 ? secondary : tertiary;
                 colors[i * 3] = color.r;
                 colors[i * 3 + 1] = color.g;
                 colors[i * 3 + 2] = color.b;
@@ -70,7 +70,7 @@ export default function ThreeBackground() {
                 size: 2.2,
                 vertexColors: true,
                 transparent: true,
-                opacity: 0.85,
+                opacity: 0.28,
                 blending: THREE.AdditiveBlending,
                 depthWrite: false,
             });
